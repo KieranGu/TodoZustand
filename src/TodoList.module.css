@@ -1,3 +1,14 @@
+/* 主容器居中样式 */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
 .item {
     padding: 8px 12px;
     margin: 4px 0;

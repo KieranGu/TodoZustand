@@ -18,7 +18,6 @@ function TodoItem({ title, completed, onToggle }) {
 
 export default function TodoList() {
     const [inputValue, setInputValue] = useState(''); 
-    // 从 Zustand store 获取数据和方法
     const { todos, addTodo, toggleTodo } = useTodoStore();
     
     // 过滤掉已完成
@@ -26,7 +25,7 @@ export default function TodoList() {
     const filteredItems = isFilter ? todos.filter(todo => !todo.completed) : todos;
     
     const handleItemToggle = (todoId) => {
-        toggleTodo(todoId); // 使用 Zustand store 的 toggleTodo 方法
+        toggleTodo(todoId); // 使用 Zustand store
     };
 
     // 使用 Zustand
@@ -39,7 +38,7 @@ export default function TodoList() {
 
 
     return (
-        <section>
+        <section className={styles.container}>
             <h1>Sally Ride 的 Todo 清单</h1>
             {/* 输入框 */}
             <div className={styles.inputContainer}>
