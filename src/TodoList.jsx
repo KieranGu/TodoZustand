@@ -19,6 +19,7 @@ function TodoItem({ title, completed, onToggle }) {
 export default function TodoList() {
     // const { formData, onUpdateFormData } = useRegisterStore();
     const [todos, setTodos] = useState(todoItems);
+    const [inputValue, setInputValue] = useState(''); 
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
     const filteredItems = isFilter ? todos.filter(todo => !todo.completed) : todos;
@@ -40,6 +41,8 @@ export default function TodoList() {
                     type="text"
                     placeholder="new Todo"
                     className={styles.todoInput}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                 />
                 <button className={styles.addButton}>添加</button>
             </div>
