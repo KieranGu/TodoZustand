@@ -20,7 +20,7 @@ function TodoItem({ title, completed, onToggle }) {
 
 export default function TodoList() {
     const [inputValue, setInputValue] = useState('');
-    const { todos, addTodo, toggleTodo } = useTodoStore();
+    const { todos, addTodo, toggleTodo, deleteCompletedTodos } = useTodoStore();
 
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
@@ -36,6 +36,11 @@ export default function TodoList() {
             addTodo(inputValue); // 使用 store 的方法
             setInputValue(''); // 清空输入框
         }
+    };
+
+    // 删除选中的 、todos
+    const handleDeleteCompleted = () => {
+        deleteCompletedTodos();
     };
 
 
@@ -64,7 +69,7 @@ export default function TodoList() {
                     <TodoItem key={item.id}{...item} onToggle={() => handleItemToggle(item.id)} />
                 ))}
             </ul>
-            <button className={styles.deleteButton}>删除</button>
+            <button className={styles.deleteButton} onClick={handleDeleteCompleted}>删除</button>
         </section>
     );
 }
