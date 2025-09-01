@@ -19,18 +19,14 @@ function TodoItem({ title, completed, onToggle }) {
 export default function TodoList() {
     const [inputValue, setInputValue] = useState(''); 
     // 从 Zustand store 获取数据和方法
-    const { todos, addTodo } = useTodoStore();
+    const { todos, addTodo, toggleTodo } = useTodoStore();
     
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
     const filteredItems = isFilter ? todos.filter(todo => !todo.completed) : todos;
-    const handleItemToggle = (todoId, newCompletedValue) => {
-        setTodos(prevTodos => prevTodos.map(todo => (
-            todo.id === todoId ? {
-                ...todo, completed:
-                    newCompletedValue
-            } : todo
-        )));
+    
+    const handleItemToggle = (todoId) => {
+        toggleTodo(todoId); // 使用 Zustand store 的 toggleTodo 方法
     };
 
     // 使用 Zustand
@@ -64,7 +60,7 @@ export default function TodoList() {
             </label>
             <ul>
                 {filteredItems.map(item => (
-                    <TodoItem key={item.id}{...item} onToggle={() => handleItemToggle(item.id, !item.completed)} />
+                    <TodoItem key={item.id}{...item} onToggle={() => handleItemToggle(item.id)} />
                 ))}
             </ul>
         </section>
