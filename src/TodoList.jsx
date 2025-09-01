@@ -35,12 +35,13 @@ export default function TodoList() {
         <section>
             <h1>Sally Ride 的 Todo 清单</h1>
             {/* 输入框 */}
-            <div style={{ marginBottom: '20px' }}>
+            <div className={styles.inputContainer}>
                 <input 
                     type="text"
                     placeholder="new Todo"
+                    className={styles.todoInput}
                 />
-                <button>添加</button>
+                <button className={styles.addButton}>添加</button>
             </div>
             
             <label>
