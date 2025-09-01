@@ -1,7 +1,6 @@
-import todoItems from './todoitems.json';
 import styles from './TodoList.module.css';
-
 import { useState } from 'react';
+import { useTodoStore } from './stores/TodoStores';
 
 function TodoItem({ title, completed, onToggle }) {
     const itemClassName = `${styles.item} ${completed ? styles.completed : ''}`;
