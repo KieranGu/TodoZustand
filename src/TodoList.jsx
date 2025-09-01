@@ -1,6 +1,7 @@
 import styles from './TodoList.module.css';
 import { useState } from 'react';
 import { useTodoStore } from './stores/TodoStores';
+import todoItems from './todoitems.json';
 
 function TodoItem({ title, completed, onToggle }) {
     const itemClassName = `${styles.item} ${completed ? styles.completed : ''}`;
@@ -33,6 +34,15 @@ export default function TodoList() {
     return (
         <section>
             <h1>Sally Ride 的 Todo 清单</h1>
+            {/* 输入框 */}
+            <div style={{ marginBottom: '20px' }}>
+                <input 
+                    type="text"
+                    placeholder="new Todo"
+                />
+                <button>添加</button>
+            </div>
+            
             <label>
                 <input type="checkbox" checked={isFilter} onChange={() => setIsFilter(!isFilter)} />
                 过滤已完成的待办事项
