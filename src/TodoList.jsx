@@ -19,6 +19,7 @@ function TodoItem({ title, completed, onToggle }) {
 export default function TodoList() {
     // const { formData, onUpdateFormData } = useRegisterStore();
     const [todos, setTodos] = useState(todoItems);
+    
     const [inputValue, setInputValue] = useState(''); 
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
@@ -32,6 +33,21 @@ export default function TodoList() {
         )));
     };
 
+
+    
+    const AddTodo = () => {
+        if (inputValue.trim()) { // 如果输出框有东西
+            const newTodo = {
+                id: todos.length > 0 ? Math.max(...todos.map(t => t.id)) + 1 : 1,
+                title: inputValue.trim(),
+                completed: false
+            };
+            setTodos(prevTodos => [...prevTodos, newTodo]);
+            setInputValue(''); // 清空输入框
+        }
+    };
+
+
     return (
         <section>
             <h1>Sally Ride 的 Todo 清单</h1>
@@ -41,10 +57,11 @@ export default function TodoList() {
                     type="text"
                     placeholder="new Todo"
                     className={styles.todoInput}
+
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                 />
-                <button className={styles.addButton}>添加</button>
+                <button className={styles.addButton} onClick={AddTodo}>添加</button>
             </div>
             
             <label>
