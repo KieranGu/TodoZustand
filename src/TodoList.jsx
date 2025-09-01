@@ -17,10 +17,10 @@ function TodoItem({ title, completed, onToggle }) {
 
 
 export default function TodoList() {
-    // const { formData, onUpdateFormData } = useRegisterStore();
-    const [todos, setTodos] = useState(todoItems);
-    
     const [inputValue, setInputValue] = useState(''); 
+    // 从 Zustand store 获取数据和方法
+    const { todos, addTodo } = useTodoStore();
+    
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
     const filteredItems = isFilter ? todos.filter(todo => !todo.completed) : todos;
@@ -33,16 +33,10 @@ export default function TodoList() {
         )));
     };
 
-
-    
+    // 使用 Zustand
     const AddTodo = () => {
-        if (inputValue.trim()) { // 如果输出框有东西
-            const newTodo = {
-                id: todos.length > 0 ? Math.max(...todos.map(t => t.id)) + 1 : 1,
-                title: inputValue.trim(),
-                completed: false
-            };
-            setTodos(prevTodos => [...prevTodos, newTodo]);
+        if (inputValue.trim()) {
+            addTodo(inputValue); // 使用 store 的方法
             setInputValue(''); // 清空输入框
         }
     };
