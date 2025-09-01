@@ -6,24 +6,26 @@ import todoItems from './todoitems.json';
 function TodoItem({ title, completed, onToggle }) {
     const itemClassName = `${styles.item} ${completed ? styles.completed : ''}`;
     return (
-        <li className={itemClassName}>
-            <label>
-                <input type="checkbox" checked={completed} onChange={onToggle} />
-                {title} {completed && '✅'}
-            </label>
-        </li>
+        <>
+            <li className={itemClassName}>
+                <label>
+                    <input type="checkbox" checked={completed} onChange={onToggle} />
+                    {title} {completed && '✅'}
+                </label>
+            </li>           
+        </>
     );
 }
 
 
 export default function TodoList() {
-    const [inputValue, setInputValue] = useState(''); 
+    const [inputValue, setInputValue] = useState('');
     const { todos, addTodo, toggleTodo } = useTodoStore();
-    
+
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
     const filteredItems = isFilter ? todos.filter(todo => !todo.completed) : todos;
-    
+
     const handleItemToggle = (todoId) => {
         toggleTodo(todoId); // 使用 Zustand store
     };
@@ -42,7 +44,7 @@ export default function TodoList() {
             <h1>Sally Ride 的 Todo 清单</h1>
             {/* 输入框 */}
             <div className={styles.inputContainer}>
-                <input 
+                <input
                     type="text"
                     placeholder="new Todo"
                     className={styles.todoInput}
@@ -52,7 +54,7 @@ export default function TodoList() {
                 />
                 <button className={styles.addButton} onClick={AddTodo}>添加</button>
             </div>
-            
+
             <label>
                 <input type="checkbox" checked={isFilter} onChange={() => setIsFilter(!isFilter)} />
                 过滤已完成的待办事项
@@ -62,6 +64,7 @@ export default function TodoList() {
                     <TodoItem key={item.id}{...item} onToggle={() => handleItemToggle(item.id)} />
                 ))}
             </ul>
+            <button className={styles.deleteButton}>删除</button>
         </section>
     );
 }
