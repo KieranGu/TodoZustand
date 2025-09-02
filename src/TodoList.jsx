@@ -1,7 +1,8 @@
 import styles from './TodoList.module.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTodoStore } from './stores/TodoStores';
 import todoItems from './todoitems.json';
+import api from './service/api';
 
 function TodoItem({ title, completed, onToggle }) {
     const itemClassName = `${styles.item} ${completed ? styles.completed : ''}`;
@@ -42,6 +43,22 @@ export default function TodoList() {
     const handleDeleteCompleted = () => {
         deleteCompletedTodos();
     };
+
+    useEffect(() => {
+        async function fetchRemoteTodos() {
+            try {
+                const response = await api.get('/todos'); // 获取全部条目
+                if (response && response.data) {
+                    response.data.forEach(item => {
+                        addTodo(item.title);
+                    });
+                }
+            } catch (err) {
+                console.error('远程获取失败', err);
+            }
+        }
+        fetchRemoteTodos();
+    }, []);
 
 
     return (
