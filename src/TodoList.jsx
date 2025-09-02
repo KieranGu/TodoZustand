@@ -32,7 +32,7 @@ export default function TodoList() {
                     setTodos(response.data.map(item => ({
                         id: item.id,
                         title: item.title,
-                        status: item.status // 用 status 字段
+                        complete: item.complete // 用 complete 字段
                     })));
                     setIsInitialized(true);
                 }
@@ -45,17 +45,17 @@ export default function TodoList() {
 
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
-    const filteredItems = isFilter ? todos.filter(todo => todo.status !== 'completed') : todos;
+    const filteredItems = isFilter ? todos.filter(todo => !todo.complete) : todos;
 
     // 切换 todo 状态并同步数据库
     const handleItemToggle = async (todoId) => {
         const todo = todos.find(t => t.id === todoId);
         if (!todo) return;
-        const newStatus = todo.status === 'todo' ? 'completed' : 'todo';
+        const newComplete = !todo.complete;
         try {
             await api.post(`/todos/${todoId}`, {
                 ...todo,
-                status: newStatus
+                complete: newComplete
             });
             toggleTodo(todoId); // 本地切换状态
         } catch (err) {
@@ -69,14 +69,14 @@ export default function TodoList() {
             try {
                 const response = await api.post('/todos', {
                     title: inputValue.trim(),
-                    status: 'todo'
+                    complete: false
                 });
                 // 后端返回新 todo（带 id），直接加入本地
                 if (response && response.data) {
                     addTodo({
                         id: response.data.id,
                         title: response.data.title,
-                        status: response.data.status
+                        complete: response.data.complete
                     });
                 }
                 setInputValue(''); // 清空输入框
@@ -88,7 +88,7 @@ export default function TodoList() {
 
     // 删除选中的 todos，并同步数据库
     const handleDeleteCompleted = async () => {
-        const completedTodos = todos.filter(todo => todo.status === 'completed');
+        const completedTodos = todos.filter(todo => todo.complete);
         // 删除数据库中的已完成 todo
         await Promise.all(
             completedTodos.map(todo =>
@@ -102,7 +102,7 @@ export default function TodoList() {
                 setTodos(response.data.map(item => ({
                     id: item.id,
                     title: item.title,
-                    status: item.status
+                    complete: item.complete
                 })));
             }
         } catch (err) {
@@ -134,7 +134,7 @@ export default function TodoList() {
                 {filteredItems.map(item => (
                     <TodoItem key={item.id}
                         title={item.title}
-                        completed={item.status === 'completed'}
+                        completed={item.complete}
                         onToggle={() => handleItemToggle(item.id)}
                     />
                 ))}
