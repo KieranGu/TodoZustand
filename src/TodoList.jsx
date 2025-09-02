@@ -18,30 +18,42 @@ function TodoItem({ title, completed, onToggle }) {
 }
 
 export default function TodoList() {
+    // 从URL参数初始化分页
+    const params = new URLSearchParams(window.location.search);
+    const initialPage = Number(params.get('page')) || 1;
+    const initialSize = Number(params.get('size')) || 5;
+
     const [inputValue, setInputValue] = useState('');
     const { todos, addTodo, toggleTodo, deleteCompletedTodos, setTodos } = useTodoStore();
-    const [isInitialized, setIsInitialized] = useState(false);
+    const [page, setPage] = useState(initialPage);
+    const [size, setSize] = useState(initialSize);
 
-    // 只在初始化时加载远程数据，避免重复
+    // 只拉取分页数据
     useEffect(() => {
-        if (isInitialized) return;
         async function fetchRemoteTodos() {
             try {
-                const response = await api.get('/todos');
+                const response = await api.get(`/todos?page=${page}&size=${size}`);
                 if (response && response.data) {
                     setTodos(response.data.map(item => ({
                         id: item.id,
                         title: item.title,
-                        complete: item.complete // 用 complete 字段
+                        complete: item.complete
                     })));
-                    setIsInitialized(true);
                 }
             } catch (err) {
                 console.error('远程获取失败', err);
             }
         }
         fetchRemoteTodos();
-    }, [isInitialized, setTodos]);
+    }, [page, size, setTodos]);
+
+    // 分页参数同步到URL
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        params.set('size', size);
+        window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    }, [page, size]);
 
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
@@ -95,9 +107,9 @@ export default function TodoList() {
                 api.delete(`/todos/${todo.id}`).catch(() => {})
             )
         );
-        // 删除后重新拉取远程 todos，确保同步
+        // 删除后重新拉取分页 todos，确保同步
         try {
-            const response = await api.get('/todos');
+            const response = await api.get(`/todos?page=${page}&size=${size}`);
             if (response && response.data) {
                 setTodos(response.data.map(item => ({
                     id: item.id,
@@ -139,6 +151,14 @@ export default function TodoList() {
                     />
                 ))}
             </ul>
+            <div style={{marginBottom: '10px'}}>
+                <button onClick={() => setPage(page > 1 ? page - 1 : 1)}>上一页</button>
+                <span style={{margin: '0 10px'}}>第 {page} 页</span>
+                <button onClick={() => setPage(page + 1)}>下一页</button>
+                <span style={{marginLeft: '20px'}}>每页
+                    <input type="number" value={size} min={1} style={{width: '40px'}} onChange={e => setSize(Number(e.target.value))} />
+                    条</span>
+            </div>
             <button className={styles.deleteButton} onClick={handleDeleteCompleted}>删除</button>
         </section>
     );
