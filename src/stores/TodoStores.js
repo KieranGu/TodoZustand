@@ -4,10 +4,10 @@ import todoItems from '../todoitems.json';
 
 
 export const useTodoStore = create((set, get) => ({
-    todos: todoItems,
+    // todos: todoItems,
     isFilter: false,
 
-    // todos: [],
+    todos: [],
     loading: false,
     error: null,
 
@@ -47,5 +47,8 @@ export const useTodoStore = create((set, get) => ({
     getFilteredTodos: () => {
         const { todos, isFilter } = get();
         return isFilter ? todos.filter(todo => !todo.completed) : todos;
-    }
+    },
+
+    // 一次性设置 todos
+    setTodos: (todos) => set(() => ({ todos })),
 }));

@@ -1,7 +1,6 @@
 import styles from './TodoList.module.css';
 import { useState, useEffect } from 'react';
 import { useTodoStore } from './stores/TodoStores';
-import todoItems from './todoitems.json';
 import api from './service/api';
 
 function TodoItem({ title, completed, onToggle }) {
@@ -18,10 +17,10 @@ function TodoItem({ title, completed, onToggle }) {
     );
 }
 
-
 export default function TodoList() {
     const [inputValue, setInputValue] = useState('');
-    const { todos, addTodo, toggleTodo, deleteCompletedTodos } = useTodoStore();
+    const { todos, addTodo, toggleTodo, deleteCompletedTodos, setTodos } = useTodoStore();
+    const [isInitialized, setIsInitialized] = useState(false);
 
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
@@ -43,23 +42,27 @@ export default function TodoList() {
     const handleDeleteCompleted = () => {
         deleteCompletedTodos();
     };
-    //从远程获取条目
+
+    // 只在初始化时加载远程数据，避免重复
     useEffect(() => {
+        if (isInitialized) return;
         async function fetchRemoteTodos() {
             try {
                 const response = await api.get('/todos');
                 if (response && response.data) {
-                    response.data.forEach(item => {
-                        addTodo(item.title);
-                    });
+                    setTodos(response.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        completed: item.completed
+                    })));
+                    setIsInitialized(true);
                 }
             } catch (err) {
                 console.error('远程获取失败', err);
             }
         }
         fetchRemoteTodos();
-    }, []);
-
+    }, [isInitialized, setTodos]);
 
     return (
         <section className={styles.container}>
