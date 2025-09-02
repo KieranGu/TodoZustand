@@ -17,7 +17,7 @@ export const useTodoStore = create((set, get) => ({
     toggleTodo: (todoId) => set((state) => ({
         todos: state.todos.map(todo =>
             todo.id === todoId
-                ? { ...todo, completed: !todo.completed }
+                ? { ...todo, status: todo.status === 'todo' ? 'completed' : 'todo' }
                 : todo
         )
     })),

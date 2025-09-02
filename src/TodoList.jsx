@@ -22,12 +22,45 @@ export default function TodoList() {
     const { todos, addTodo, toggleTodo, deleteCompletedTodos, setTodos } = useTodoStore();
     const [isInitialized, setIsInitialized] = useState(false);
 
+    // 只在初始化时加载远程数据，避免重复
+    useEffect(() => {
+        if (isInitialized) return;
+        async function fetchRemoteTodos() {
+            try {
+                const response = await api.get('/todos');
+                if (response && response.data) {
+                    setTodos(response.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        status: item.status // 用 status 字段
+                    })));
+                    setIsInitialized(true);
+                }
+            } catch (err) {
+                console.error('远程获取失败', err);
+            }
+        }
+        fetchRemoteTodos();
+    }, [isInitialized, setTodos]);
+
     // 过滤掉已完成
     const [isFilter, setIsFilter] = useState(false);
-    const filteredItems = isFilter ? todos.filter(todo => !todo.completed) : todos;
+    const filteredItems = isFilter ? todos.filter(todo => todo.status !== 'completed') : todos;
 
-    const handleItemToggle = (todoId) => {
-        toggleTodo(todoId); // 使用 Zustand store
+    // 切换 todo 状态并同步数据库
+    const handleItemToggle = async (todoId) => {
+        const todo = todos.find(t => t.id === todoId);
+        if (!todo) return;
+        const newStatus = todo.status === 'todo' ? 'completed' : 'todo';
+        try {
+            await api.post(`/todos/${todoId}`, {
+                ...todo,
+                status: newStatus
+            });
+            toggleTodo(todoId); // 本地切换状态
+        } catch (err) {
+            // 错误处理已在拦截器里统一 alert
+        }
     };
 
     // 使用 Zustand
@@ -36,14 +69,14 @@ export default function TodoList() {
             try {
                 await api.post('/todos', {
                     title: inputValue.trim(),
-                    status: 'Active'
+                    status: 'todo'
                 });
                 // 后端返回 void，前端本地生成 id
                 const maxId = todos.length > 0 ? Math.max(...todos.map(t => t.id)) : 0;
                 addTodo({
                     id: maxId + 1,
                     title: inputValue.trim(),
-                    status: 'Active'
+                    status: 'todo'
                 });
                 setInputValue(''); // 清空输入框
             } catch (err) {
@@ -56,27 +89,6 @@ export default function TodoList() {
     const handleDeleteCompleted = () => {
         deleteCompletedTodos();
     };
-
-    // 只在初始化时加载远程数据，避免重复
-    useEffect(() => {
-        if (isInitialized) return;
-        async function fetchRemoteTodos() {
-            try {
-                const response = await api.get('/todos');
-                if (response && response.data) {
-                    setTodos(response.data.map(item => ({
-                        id: item.id,
-                        title: item.title,
-                        completed: item.completed
-                    })));
-                    setIsInitialized(true);
-                }
-            } catch (err) {
-                console.error('远程获取失败', err);
-            }
-        }
-        fetchRemoteTodos();
-    }, [isInitialized, setTodos]);
 
     return (
         <section className={styles.container}>
@@ -100,7 +112,11 @@ export default function TodoList() {
             </label>
             <ul>
                 {filteredItems.map(item => (
-                    <TodoItem key={item.id}{...item} onToggle={() => handleItemToggle(item.id)} />
+                    <TodoItem key={item.id}
+                        title={item.title}
+                        completed={item.status === 'completed'}
+                        onToggle={() => handleItemToggle(item.id)}
+                    />
                 ))}
             </ul>
             <button className={styles.deleteButton} onClick={handleDeleteCompleted}>删除</button>
