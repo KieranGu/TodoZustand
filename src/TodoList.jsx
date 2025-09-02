@@ -31,10 +31,24 @@ export default function TodoList() {
     };
 
     // 使用 Zustand
-    const AddTodo = () => {
+    const AddTodo = async () => {
         if (inputValue.trim()) {
-            addTodo(inputValue); // 使用 store 的方法
-            setInputValue(''); // 清空输入框
+            try {
+                await api.post('/todos', {
+                    title: inputValue.trim(),
+                    status: 'Active'
+                });
+                // 后端返回 void，前端本地生成 id
+                const maxId = todos.length > 0 ? Math.max(...todos.map(t => t.id)) : 0;
+                addTodo({
+                    id: maxId + 1,
+                    title: inputValue.trim(),
+                    status: 'Active'
+                });
+                setInputValue(''); // 清空输入框
+            } catch (err) {
+                // 错误处理已在拦截器里统一 alert
+            }
         }
     };
 
