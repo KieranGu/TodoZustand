@@ -85,9 +85,28 @@ export default function TodoList() {
         }
     };
 
-    // 删除选中的 、todos
-    const handleDeleteCompleted = () => {
-        deleteCompletedTodos();
+    // 删除选中的 todos，并同步数据库
+    const handleDeleteCompleted = async () => {
+        const completedTodos = todos.filter(todo => todo.status === 'completed');
+        // 删除数据库中的已完成 todo
+        await Promise.all(
+            completedTodos.map(todo =>
+                api.delete(`/todos/${todo.id}`).catch(() => {})
+            )
+        );
+        // 删除后重新拉取远程 todos，确保同步
+        try {
+            const response = await api.get('/todos');
+            if (response && response.data) {
+                setTodos(response.data.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    status: item.status
+                })));
+            }
+        } catch (err) {
+            // 错误处理已在拦截器里统一 alert
+        }
     };
 
     return (
