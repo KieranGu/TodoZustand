@@ -22,6 +22,7 @@ api.interceptors.response.use(response => {
     return response;
 }, error => {
     console.error('响应错误:', error);
+    alert('请求出错：' + (error?.response?.data?.message || error.message));
     return Promise.reject(error);
 });
 
