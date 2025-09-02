@@ -67,17 +67,18 @@ export default function TodoList() {
     const AddTodo = async () => {
         if (inputValue.trim()) {
             try {
-                await api.post('/todos', {
+                const response = await api.post('/todos', {
                     title: inputValue.trim(),
                     status: 'todo'
                 });
-                // 后端返回 void，前端本地生成 id
-                const maxId = todos.length > 0 ? Math.max(...todos.map(t => t.id)) : 0;
-                addTodo({
-                    id: maxId + 1,
-                    title: inputValue.trim(),
-                    status: 'todo'
-                });
+                // 后端返回新 todo（带 id），直接加入本地
+                if (response && response.data) {
+                    addTodo({
+                        id: response.data.id,
+                        title: response.data.title,
+                        status: response.data.status
+                    });
+                }
                 setInputValue(''); // 清空输入框
             } catch (err) {
                 // 错误处理已在拦截器里统一 alert
