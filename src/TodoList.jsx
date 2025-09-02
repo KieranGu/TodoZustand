@@ -43,11 +43,11 @@ export default function TodoList() {
     const handleDeleteCompleted = () => {
         deleteCompletedTodos();
     };
-
+    //从远程获取条目
     useEffect(() => {
         async function fetchRemoteTodos() {
             try {
-                const response = await api.get('/todos'); // 获取全部条目
+                const response = await api.get('/todos');
                 if (response && response.data) {
                     response.data.forEach(item => {
                         addTodo(item.title);
