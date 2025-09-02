@@ -7,7 +7,7 @@ export const useTodoStore = create((set, get) => ({
     todos: todoItems,
     isFilter: false,
 
-    todos: [],
+    // todos: [],
     loading: false,
     error: null,
 
@@ -23,13 +23,19 @@ export const useTodoStore = create((set, get) => ({
     })),
 
     // 添加新的 todo
-    addTodo: (title) => set((state) => {
-        const newTodo = {
-            id: Math.max(...state.todos.map(todo => todo.id)) + 1,
-            title: title.trim(),
-            completed: false
-        };
-        return { todos: [...state.todos, newTodo] };
+    addTodo: (todo) => set((state) => {
+        // 如果传入的是字符串，则走原逻辑
+        if (typeof todo === 'string') {
+            const maxId = state.todos.length > 0 ? Math.max(...state.todos.map(t => t.id)) : 0;
+            const newTodo = {
+                id: maxId + 1,
+                title: todo.trim(),
+                completed: false
+            };
+            return { todos: [...state.todos, newTodo] };
+        }
+        // 如果传入的是对象，直接用对象里的 id/title/completed
+        return { todos: [...state.todos, todo] };
     }),
 
     // 删除已完成的 todos
