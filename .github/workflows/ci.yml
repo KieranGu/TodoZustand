@@ -25,3 +25,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Zip build output
+        run: zip -r my-todo-dist.zip dist
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-todo-dist
+          path: my-todo-dist.zip
