@@ -24,7 +24,7 @@ export default function TodoList() {
     const initialSize = Number(params.get('size')) || 5;
 
     const [inputValue, setInputValue] = useState('');
-    const { todos, addTodo, toggleTodo, deleteCompletedTodos, setTodos } = useTodoStore();
+    const { todos, toggleTodo, setTodos } = useTodoStore();
     const [page, setPage] = useState(initialPage);
     const [size, setSize] = useState(initialSize);
     const [total, setTotal] = useState(0);

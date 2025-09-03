@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import todoItems from '../todoitems.json';
 
 
 
