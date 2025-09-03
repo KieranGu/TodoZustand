@@ -27,6 +27,7 @@ export default function TodoList() {
     const { todos, addTodo, toggleTodo, deleteCompletedTodos, setTodos } = useTodoStore();
     const [page, setPage] = useState(initialPage);
     const [size, setSize] = useState(initialSize);
+    const [total, setTotal] = useState(0);
 
     // 只拉取分页数据
     useEffect(() => {
@@ -46,6 +47,21 @@ export default function TodoList() {
         }
         fetchRemoteTodos();
     }, [page, size, setTodos]);
+
+    // 初始化时获取总数
+    useEffect(() => {
+        async function fetchTotal() {
+            try {
+                const response = await api.get('/todos?page=1&size=-1');
+                if (response && response.data) {
+                    setTotal(response.data.length);
+                }
+            } catch (err) {
+                // 错误处理已在拦截器里统一 alert
+            }
+        }
+        fetchTotal();
+    }, []);
 
     // 分页参数同步到URL
     useEffect(() => {
@@ -79,19 +95,26 @@ export default function TodoList() {
     const AddTodo = async () => {
         if (inputValue.trim()) {
             try {
-                const response = await api.post('/todos', {
+                await api.post('/todos', {
                     title: inputValue.trim(),
                     complete: false
                 });
-                // 后端返回新 todo（带 id），直接加入本地
-                if (response && response.data) {
-                    addTodo({
-                        id: response.data.id,
-                        title: response.data.title,
-                        complete: response.data.complete
-                    });
-                }
                 setInputValue(''); // 清空输入框
+                // 添加后重新拉取当前页和总数
+                const [listRes, totalRes] = await Promise.all([
+                    api.get(`/todos?page=${page}&size=${size}`),
+                    api.get('/todos?page=1&size=-1')
+                ]);
+                if (listRes && listRes.data) {
+                    setTodos(listRes.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        complete: item.complete
+                    })));
+                }
+                if (totalRes && totalRes.data) {
+                    setTotal(totalRes.data.length);
+                }
             } catch (err) {
                 // 错误处理已在拦截器里统一 alert
             }
@@ -101,21 +124,26 @@ export default function TodoList() {
     // 删除选中的 todos，并同步数据库
     const handleDeleteCompleted = async () => {
         const completedTodos = todos.filter(todo => todo.complete);
-        // 删除数据库中的已完成 todo
         await Promise.all(
             completedTodos.map(todo =>
                 api.delete(`/todos/${todo.id}`).catch(() => {})
             )
         );
-        // 删除后重新拉取分页 todos，确保同步
+        // 删除后重新拉取当前页和总数
         try {
-            const response = await api.get(`/todos?page=${page}&size=${size}`);
-            if (response && response.data) {
-                setTodos(response.data.map(item => ({
+            const [listRes, totalRes] = await Promise.all([
+                api.get(`/todos?page=${page}&size=${size}`),
+                api.get('/todos?page=1&size=-1')
+            ]);
+            if (listRes && listRes.data) {
+                setTodos(listRes.data.map(item => ({
                     id: item.id,
                     title: item.title,
                     complete: item.complete
                 })));
+            }
+            if (totalRes && totalRes.data) {
+                setTotal(totalRes.data.length);
             }
         } catch (err) {
             // 错误处理已在拦截器里统一 alert
@@ -154,9 +182,12 @@ export default function TodoList() {
             <div style={{marginBottom: '10px'}}>
                 <button onClick={() => setPage(page > 1 ? page - 1 : 1)}>上一页</button>
                 <span style={{margin: '0 10px'}}>第 {page} 页</span>
-                <button onClick={() => setPage(page + 1)}>下一页</button>
+                <button 
+                    onClick={() => setPage(page + 1)}
+                    disabled={page * size >= total}
+                >下一页</button>
                 <span style={{marginLeft: '20px'}}>每页
-                    <input type="number" value={size} min={1} style={{width: '40px'}} onChange={e => setSize(Number(e.target.value))} />
+                    <input type="number" value={size > 0 ? size : 5} min={1} style={{width: '40px'}} onChange={e => setSize(Number(e.target.value))} />
                     条</span>
             </div>
             <button className={styles.deleteButton} onClick={handleDeleteCompleted}>删除</button>
